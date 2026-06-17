@@ -1,46 +1,93 @@
 <div align="center">
 
-# Hanami Meta
+# Hanami Infrastructure
 
-**Organization-wide planning, shared infrastructure, and cross-project discussions for the Hanami ecosystem.**
+**Production deployment, operations, and cross-project architecture for the Hanami ecosystem.**
 
 </div>
 
-## What belongs here?
+## Purpose
 
-Use this repository for issues involving multiple Hanami projects or the ecosystem as a whole, including:
+This repository contains the shared configuration and operational tooling used to run Hanami projects together.
 
-* shared accounts and authentication
-* organization-wide infrastructure
-* integrations between projects
-* supporter features and shared entitlements
-* architectural decisions affecting multiple repositories
-* proposals where the correct repository is unclear
+Application source code and image build workflows remain in their own repositories:
 
-## Project-specific issues
+- [Hanami Bot](https://github.com/hanami-osu/bot)
+- [Hanami Web](https://github.com/hanami-osu/web)
+- [osu!guessr](https://github.com/hanami-osu/osu-guessr)
+- [Hanami Companion](https://github.com/hanami-osu/companion)
 
-Bugs and feature requests affecting only one project should be submitted to that project's repository:
+This repository is responsible for deploying those applications, connecting their shared services, documenting production operations, and coordinating architecture that affects multiple projects.
 
-* [Hanami Web](https://github.com/hanami-osu/web)
-* [Hanami Bot](https://github.com/hanami-osu/bot)
-* [Hanami Companion](https://github.com/hanami-osu/companion)
-* [osu!guessr](https://github.com/hanami-osu/osu-guessr)
+## Responsibilities
 
-When an issue starts here but is later found to belong to a specific project, it may be moved or recreated in the relevant repository.
+- production Docker Compose configuration
+- reverse proxy and routing configuration
+- shared MariaDB, Redis, and network configuration
+- deployment and rollback scripts
+- database backup and restore tooling
+- health checks, monitoring, and alerting
+- operational runbooks
+- architecture decisions affecting multiple Hanami projects
+- shared account and authentication planning
 
-## Contributing
+## Planned structure
 
-Before opening a new issue, check existing issues to avoid duplicates.
+```text
+.
+├── compose/
+│   ├── production.yml
+│   └── .env.example
+├── caddy/
+│   ├── Caddyfile
+│   └── snippets/
+├── scripts/
+│   ├── deploy.sh
+│   ├── rollback.sh
+│   ├── backup.sh
+│   └── restore.sh
+├── monitoring/
+├── docs/
+│   ├── architecture.md
+│   ├── adr/
+│   └── runbooks/
+└── README.md
+```
 
-When proposing a cross-project change, include:
+Directories should be added as they become useful. The repository should stay small and practical rather than introducing infrastructure that Hanami does not yet need.
 
-* the projects affected
-* the problem being solved
-* the expected behavior
-* any migration or compatibility concerns
-* relevant technical context
+## Deployment principles
 
-Implementation work should usually happen in the repository responsible for the affected code. This repository is primarily used to coordinate decisions and track work spanning multiple projects.
+- Application repositories build and publish versioned Docker images.
+- Production deployments pin explicit image versions instead of relying only on `latest`.
+- Services expose health checks where practical.
+- Database migrations run as an explicit deployment step.
+- Deployments must have a documented rollback path.
+- Backups are only considered complete once restoration has been tested.
+- Persistent data, database dumps, credentials, and production environment files are never committed.
+
+## What does not belong here
+
+- application source code
+- production secrets or `.env` files
+- database dumps and persistent volumes
+- project-specific feature requests or bug reports
+- Docker image build logic that belongs to an application repository
+
+Project-specific work should be tracked in the repository responsible for that code. Issues involving multiple projects, shared deployment, authentication, infrastructure, or ecosystem-wide architecture may be tracked here.
+
+## Initial goals
+
+1. Document the current production topology.
+2. Create a single reproducible production Compose deployment.
+3. Add Caddy routing and shared network configuration.
+4. Add automated database backups and a tested restore process.
+5. Add deployment, health-check, and rollback scripts.
+6. Document the shared Hanami account architecture and migration plan.
+
+## Security
+
+This repository may remain public as long as all configuration is sanitized. Production IP addresses, credentials, private keys, tokens, internal-only endpoints, and sensitive operational details must stay outside Git.
 
 ---
 
